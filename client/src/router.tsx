@@ -17,6 +17,10 @@ import { OrdersPage } from '@/pages/OrdersPage';
 import { OrderDetailPage } from '@/pages/OrderDetailPage';
 import { LoginPage } from '@/pages/LoginPage';
 import { RegisterPage } from '@/pages/RegisterPage';
+import { ProfilePage } from '@/pages/ProfilePage';
+import { AboutPage } from '@/pages/static/AboutPage';
+import { FaqPage } from '@/pages/static/FaqPage';
+import { PolicyPage } from '@/pages/static/PolicyPage';
 import { AdminDashboardPage } from '@/pages/admin/AdminDashboardPage';
 import { AdminProductsPage } from '@/pages/admin/AdminProductsPage';
 import { AdminCategoriesPage } from '@/pages/admin/AdminCategoriesPage';
@@ -95,6 +99,30 @@ const registerRoute = createRoute({
   component: RegisterPage,
 });
 
+const profileRoute = createRoute({
+  getParentRoute: () => storeLayoutRoute,
+  path: '/tai-khoan',
+  component: ProfilePage,
+});
+
+const aboutRoute = createRoute({
+  getParentRoute: () => storeLayoutRoute,
+  path: '/ve-chung-toi',
+  component: AboutPage,
+});
+
+const faqRoute = createRoute({
+  getParentRoute: () => storeLayoutRoute,
+  path: '/cau-hoi-thuong-gap',
+  component: FaqPage,
+});
+
+const policyRoute = createRoute({
+  getParentRoute: () => storeLayoutRoute,
+  path: '/chinh-sach',
+  component: PolicyPage,
+});
+
 const adminLayoutRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin',
@@ -154,6 +182,10 @@ const routeTree = rootRoute.addChildren([
     orderDetailRoute,
     loginRoute,
     registerRoute,
+    profileRoute,
+    aboutRoute,
+    faqRoute,
+    policyRoute,
   ]),
   adminLayoutRoute.addChildren([
     adminIndexRoute,

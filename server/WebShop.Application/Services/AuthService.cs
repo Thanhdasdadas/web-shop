@@ -68,6 +68,28 @@ public class AuthService(
         return await CreateAuthResponseAsync(user, ct);
     }
 
+    public async Task<UserDto> UpdateProfileAsync(string userId, UpdateProfileRequest request, CancellationToken ct = default)
+    {
+        var user = await users.GetByIdAsync(userId, ct) ?? throw new AppException("Người dùng không tồn tại.");
+        user.FullName = request.FullName.Trim();
+        user.Phone = string.IsNullOrWhiteSpace(request.Phone) ? null : request.Phone.Trim();
+        user.UpdatedAt = DateTime.UtcNow;
+        await users.UpdateAsync(user, ct);
+        return MapUser(user);
+    }
+
+    public async Task ChangePasswordAsync(string userId, ChangePasswordRequest request, CancellationToken ct = default)
+    {
+        var user = await users.GetByIdAsync(userId, ct) ?? throw new AppException("Người dùng không tồn tại.");
+        if (!VerifyPassword(request.CurrentPassword, user))
+            throw new AppException("Mật khẩu hiện tại không đúng.", 400);
+        var (hash, salt) = passwordHasher.HashWithNewSalt(request.NewPassword);
+        user.PasswordHash = hash;
+        user.PasswordSalt = salt;
+        user.UpdatedAt = DateTime.UtcNow;
+        await users.UpdateAsync(user, ct);
+    }
+
     public async Task LogoutAsync(string userId, string refreshToken, CancellationToken ct = default)
     {
         var hash = jwt.HashRefreshToken(refreshToken);

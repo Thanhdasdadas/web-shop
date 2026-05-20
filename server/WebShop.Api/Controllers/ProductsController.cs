@@ -16,6 +16,11 @@ public class ProductsController(ICatalogService catalog) : ControllerBase
         Ok(await catalog.GetProductsAsync(query, publishedOnly: true, ct));
 
     [AllowAnonymous]
+    [HttpGet("{slug}/related")]
+    public async Task<ActionResult<List<ProductDto>>> GetRelated(string slug, [FromQuery] int limit = 4, CancellationToken ct = default) =>
+        Ok(await catalog.GetRelatedProductsAsync(slug, limit, ct));
+
+    [AllowAnonymous]
     [HttpGet("{slug}")]
     public async Task<ActionResult<ProductDto>> GetBySlug(string slug, CancellationToken ct)
     {

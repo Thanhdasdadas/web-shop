@@ -43,7 +43,9 @@ public class CatalogService(
     public async Task<PagedResult<ProductDto>> GetProductsAsync(ProductQuery query, bool publishedOnly, CancellationToken ct = default)
     {
         var isPublished = publishedOnly ? true : query.IsPublished;
-        var paged = await products.GetPagedAsync(query.Search, query.CategoryId, isPublished, query.Page, query.PageSize, ct);
+        var paged = await products.GetPagedAsync(
+            query.Search, query.CategoryId, isPublished, query.SortBy, query.InStockOnly,
+            query.Page, query.PageSize, ct);
         var items = new List<ProductDto>();
         foreach (var p in paged.Items)
             items.Add(await MapProductAsync(p, ct));
@@ -78,6 +80,17 @@ public class CatalogService(
     {
         var p = await products.GetBySlugAsync(slug, ct);
         return p == null ? null : await MapProductAsync(p, ct);
+    }
+
+    public async Task<List<ProductDto>> GetRelatedProductsAsync(string slug, int limit = 4, CancellationToken ct = default)
+    {
+        var p = await products.GetBySlugAsync(slug, ct);
+        if (p == null) return [];
+        var related = await products.GetRelatedAsync(p.CategoryId, p.Id, limit, ct);
+        var items = new List<ProductDto>();
+        foreach (var r in related)
+            items.Add(await MapProductAsync(r, ct));
+        return items;
     }
 
     public async Task<ProductDto> CreateProductAsync(CreateProductRequest request, CancellationToken ct = default)

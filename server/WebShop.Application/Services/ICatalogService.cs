@@ -14,6 +14,7 @@ public interface ICatalogService
     Task<ProductAdminSummaryDto> GetProductAdminSummaryAsync(CancellationToken ct = default);
     Task<ProductDto> GetProductByIdAsync(string id, CancellationToken ct = default);
     Task<ProductDto?> GetProductBySlugAsync(string slug, CancellationToken ct = default);
+    Task<List<ProductDto>> GetRelatedProductsAsync(string slug, int limit = 4, CancellationToken ct = default);
     Task<ProductDto> SetPublishAsync(string id, bool isPublished, CancellationToken ct = default);
     Task<ProductDto> CreateProductAsync(CreateProductRequest request, CancellationToken ct = default);
     Task<ProductDto> UpdateProductAsync(string id, UpdateProductRequest request, CancellationToken ct = default);

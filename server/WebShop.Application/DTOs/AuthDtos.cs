@@ -7,3 +7,5 @@ public record LoginRequest(string Email, string Password);
 public record RefreshRequest(string RefreshToken);
 public record AuthResponse(string AccessToken, string RefreshToken, DateTime ExpiresAt, UserDto User);
 public record UserDto(string Id, string Email, string FullName, string? Phone, UserRole Role);
+public record UpdateProfileRequest(string FullName, string? Phone);
+public record ChangePasswordRequest(string CurrentPassword, string NewPassword);

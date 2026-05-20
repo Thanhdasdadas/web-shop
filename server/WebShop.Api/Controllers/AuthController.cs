@@ -41,4 +41,17 @@ public class AuthController(IAuthService auth, IUserRepository users) : Controll
         var user = await users.GetByIdAsync(User.GetUserId(), ct);
         return user == null ? NotFound() : Ok(AuthService.MapUser(user));
     }
+
+    [Authorize]
+    [HttpPut("profile")]
+    public async Task<ActionResult<UserDto>> UpdateProfile([FromBody] UpdateProfileRequest request, CancellationToken ct) =>
+        Ok(await auth.UpdateProfileAsync(User.GetUserId(), request, ct));
+
+    [Authorize]
+    [HttpPost("change-password")]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request, CancellationToken ct)
+    {
+        await auth.ChangePasswordAsync(User.GetUserId(), request, ct);
+        return NoContent();
+    }
 }

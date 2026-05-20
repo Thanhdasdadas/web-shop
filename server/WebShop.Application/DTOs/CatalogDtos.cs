@@ -16,4 +16,12 @@ public record UpdateProductRequest(
     string Name, string Slug, string Description, List<string> Images,
     decimal Price, string CategoryId, string Sku, bool IsPublished);
 
-public record ProductQuery(string? Search, string? CategoryId, bool? IsPublished = null, int Page = 1, int PageSize = 12);
+/// <summary>newest | price_asc | price_desc | name_asc</summary>
+public record ProductQuery(
+    string? Search,
+    string? CategoryId,
+    bool? IsPublished = null,
+    string? SortBy = null,
+    bool? InStockOnly = null,
+    int Page = 1,
+    int PageSize = 12);
