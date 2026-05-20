@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { useParams, Link } from '@tanstack/react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
-import type { Product } from '@/types';
+import type { Product, ProductReviewSummary } from '@/types';
+import { useAuthStore } from '@/stores/authStore';
+import { Input } from '@/components/ui/Input';
 import { formatCurrency } from '@/lib/format';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -15,6 +17,10 @@ import { toast } from '@/stores/toastStore';
 export function ProductDetailPage() {
   const { slug } = useParams({ strict: false }) as { slug: string };
   const [qty, setQty] = useState(1);
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState('');
+  const [orderId, setOrderId] = useState('');
+  const user = useAuthStore((s) => s.user);
   const qc = useQueryClient();
 
   const { data: product, isLoading } = useQuery({
@@ -26,6 +32,28 @@ export function ProductDetailPage() {
     queryKey: ['product-related', slug],
     queryFn: async () => (await api.get<Product[]>(`/products/${slug}/related`)).data,
     enabled: !!slug,
+  });
+
+  const { data: reviews } = useQuery({
+    queryKey: ['reviews', product?.id],
+    queryFn: async () =>
+      (await api.get<ProductReviewSummary>(`/products/${product!.id}/reviews`)).data,
+    enabled: !!product?.id,
+  });
+
+  const submitReview = useMutation({
+    mutationFn: async () =>
+      api.post('/products/reviews', {
+        productId: product!.id,
+        orderId,
+        rating,
+        comment,
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['reviews', product?.id] });
+      toast('Đã gửi đánh giá', 'success');
+      setComment('');
+    },
   });
 
   const addToCart = useMutation({
@@ -98,6 +126,31 @@ export function ProductDetailPage() {
           </Card>
         </div>
       </div>
+
+      <section className="mt-16 border-t border-brand-100 pt-12">
+        <h2 className="text-xl font-bold text-brand-900">
+          Đánh giá {reviews && reviews.totalCount > 0 && `(${reviews.averageRating.toFixed(1)}★ · ${reviews.totalCount})`}
+        </h2>
+        <ul className="mt-4 space-y-3">
+          {reviews?.items.map((r) => (
+            <li key={r.id} className="rounded-lg border border-brand-100 p-3 text-sm">
+              <p className="font-medium">{r.userFullName} — {'★'.repeat(r.rating)}</p>
+              <p className="text-slate-600">{r.comment}</p>
+            </li>
+          ))}
+        </ul>
+        {user && (
+          <Card className="mt-6 max-w-lg space-y-3">
+            <p className="font-medium text-brand-900">Viết đánh giá (sau khi đã nhận hàng)</p>
+            <Input label="Mã đơn hàng" value={orderId} onChange={(e) => setOrderId(e.target.value)} />
+            <Input label="Số sao (1-5)" type="number" min={1} max={5} value={rating} onChange={(e) => setRating(Number(e.target.value))} />
+            <Input label="Nhận xét" value={comment} onChange={(e) => setComment(e.target.value)} />
+            <Button onClick={() => submitReview.mutate()} disabled={submitReview.isPending}>
+              Gửi đánh giá
+            </Button>
+          </Card>
+        )}
+      </section>
 
       <section className="mt-16 border-t border-brand-100 pt-12">
         <h2 className="text-xl font-bold text-brand-900">Sản phẩm liên quan</h2>

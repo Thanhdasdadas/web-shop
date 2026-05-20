@@ -25,6 +25,22 @@ public class OrderRepository(MongoDbContext context) : MongoRepository<Order>(co
     public async Task<List<Order>> GetRecentAsync(int count, CancellationToken ct = default) =>
         await Collection.Find(_ => true).SortByDescending(o => o.CreatedAt).Limit(count).ToListAsync(ct);
 
+    public async Task<List<Order>> GetDeliveredInRangeAsync(DateTime? from, DateTime? to, CancellationToken ct = default)
+    {
+        var filter = Builders<Order>.Filter.Eq(o => o.Status, OrderStatus.Delivered);
+        if (from.HasValue) filter &= Builders<Order>.Filter.Gte(o => o.CreatedAt, from.Value);
+        if (to.HasValue) filter &= Builders<Order>.Filter.Lte(o => o.CreatedAt, to.Value);
+        return await Collection.Find(filter).ToListAsync(ct);
+    }
+
+    public async Task<bool> UserHasDeliveredProductAsync(string userId, string productId, CancellationToken ct = default)
+    {
+        var filter = Builders<Order>.Filter.Eq(o => o.UserId, userId)
+            & Builders<Order>.Filter.Eq(o => o.Status, OrderStatus.Delivered)
+            & Builders<Order>.Filter.ElemMatch(o => o.Items, i => i.ProductId == productId);
+        return await Collection.CountDocumentsAsync(filter, cancellationToken: ct) > 0;
+    }
+
     private async Task<PagedResult<Order>> GetPagedAsync(FilterDefinition<Order> filter, int page, int pageSize, CancellationToken ct)
     {
         var total = await Collection.CountDocumentsAsync(filter, cancellationToken: ct);

@@ -12,6 +12,7 @@ public class DataSeeder(
     ICategoryRepository categories,
     IProductRepository products,
     IInventoryRepository inventory,
+    ICouponRepository coupons,
     IPasswordHasher passwordHasher,
     IOptions<SeedSettings> seedOptions,
     ILogger<DataSeeder> logger)
@@ -29,11 +30,30 @@ public class DataSeeder(
             existingCategories = [];
         }
 
-        if (existingCategories.Count > 0) return;
+        if (existingCategories.Count == 0)
+        {
+            logger.LogInformation("Seeding catalog Flower Knows...");
+            await SeedFlowerKnowsCatalogAsync(ct);
+            logger.LogInformation("Catalog Flower Knows đã seed.");
+        }
 
-        logger.LogInformation("Seeding catalog Flower Knows...");
-        await SeedFlowerKnowsCatalogAsync(ct);
-        logger.LogInformation("Catalog Flower Knows đã seed.");
+        await EnsureSampleCouponsAsync(ct);
+    }
+
+    private async Task EnsureSampleCouponsAsync(CancellationToken ct)
+    {
+        if (await coupons.GetByCodeAsync("GLOW10", ct) != null) return;
+        await coupons.InsertAsync(new Coupon
+        {
+            Code = "GLOW10",
+            DiscountType = CouponDiscountType.Percent,
+            Value = 10,
+            MinOrderAmount = 300000,
+            MaxDiscount = 100000,
+            UsageLimit = 100,
+            IsActive = true
+        }, ct);
+        logger.LogInformation("Đã seed mã giảm giá mẫu GLOW10.");
     }
 
     private async Task EnsureBootstrapAdminAsync(CancellationToken ct)

@@ -8,6 +8,9 @@ const nav = [
   { to: '/admin/danh-muc', label: 'Danh mục' },
   { to: '/admin/kho', label: 'Kho hàng' },
   { to: '/admin/don-hang', label: 'Đơn hàng' },
+  { to: '/admin/ma-giam-gia', label: 'Mã giảm giá' },
+  { to: '/admin/danh-gia', label: 'Đánh giá' },
+  { to: '/admin/bao-cao', label: 'Báo cáo' },
   { to: '/admin/nguoi-dung', label: 'Tài khoản', adminOnly: true },
 ];
 

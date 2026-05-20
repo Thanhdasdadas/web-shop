@@ -27,6 +27,12 @@ import { AdminCategoriesPage } from '@/pages/admin/AdminCategoriesPage';
 import { AdminInventoryPage } from '@/pages/admin/AdminInventoryPage';
 import { AdminOrdersPage } from '@/pages/admin/AdminOrdersPage';
 import { AdminUsersPage } from '@/pages/admin/AdminUsersPage';
+import { ForgotPasswordPage } from '@/pages/ForgotPasswordPage';
+import { ResetPasswordPage } from '@/pages/ResetPasswordPage';
+import { WishlistPage } from '@/pages/WishlistPage';
+import { AdminCouponsPage } from '@/pages/admin/AdminCouponsPage';
+import { AdminReviewsPage } from '@/pages/admin/AdminReviewsPage';
+import { AdminReportsPage } from '@/pages/admin/AdminReportsPage';
 
 const rootRoute = createRootRoute({ component: Outlet });
 
@@ -105,6 +111,27 @@ const profileRoute = createRoute({
   component: ProfilePage,
 });
 
+const wishlistRoute = createRoute({
+  getParentRoute: () => storeLayoutRoute,
+  path: '/yeu-thich',
+  beforeLoad: () => {
+    if (!useAuthStore.getState().user) throw redirect({ to: '/dang-nhap' });
+  },
+  component: WishlistPage,
+});
+
+const forgotPasswordRoute = createRoute({
+  getParentRoute: () => storeLayoutRoute,
+  path: '/quen-mat-khau',
+  component: ForgotPasswordPage,
+});
+
+const resetPasswordRoute = createRoute({
+  getParentRoute: () => storeLayoutRoute,
+  path: '/dat-lai-mat-khau',
+  component: ResetPasswordPage,
+});
+
 const aboutRoute = createRoute({
   getParentRoute: () => storeLayoutRoute,
   path: '/ve-chung-toi',
@@ -171,6 +198,24 @@ const adminUsersRoute = createRoute({
   component: AdminUsersPage,
 });
 
+const adminCouponsRoute = createRoute({
+  getParentRoute: () => adminLayoutRoute,
+  path: '/ma-giam-gia',
+  component: AdminCouponsPage,
+});
+
+const adminReviewsRoute = createRoute({
+  getParentRoute: () => adminLayoutRoute,
+  path: '/danh-gia',
+  component: AdminReviewsPage,
+});
+
+const adminReportsRoute = createRoute({
+  getParentRoute: () => adminLayoutRoute,
+  path: '/bao-cao',
+  component: AdminReportsPage,
+});
+
 const routeTree = rootRoute.addChildren([
   storeLayoutRoute.addChildren([
     indexRoute,
@@ -183,6 +228,9 @@ const routeTree = rootRoute.addChildren([
     loginRoute,
     registerRoute,
     profileRoute,
+    wishlistRoute,
+    forgotPasswordRoute,
+    resetPasswordRoute,
     aboutRoute,
     faqRoute,
     policyRoute,
@@ -194,6 +242,9 @@ const routeTree = rootRoute.addChildren([
     adminInventoryRoute,
     adminOrdersRoute,
     adminUsersRoute,
+    adminCouponsRoute,
+    adminReviewsRoute,
+    adminReportsRoute,
   ]),
 ]);
 

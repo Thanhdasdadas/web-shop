@@ -1,11 +1,11 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from '@tanstack/react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import api from '@/lib/api';
-import type { Cart, Order } from '@/types';
+import type { Cart, Order, SavedAddress, ValidateCouponResponse } from '@/types';
 import { formatCurrency } from '@/lib/format';
 import { getApiErrorMessage } from '@/lib/errors';
 import { mergeGuestCart } from '@/lib/cartMerge';
@@ -33,10 +33,20 @@ export function CheckoutPage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const user = useAuthStore((s) => s.user);
+  const [savedAddressId, setSavedAddressId] = useState<string>('');
+  const [couponCode, setCouponCode] = useState('');
+  const [discount, setDiscount] = useState(0);
+  const [couponMsg, setCouponMsg] = useState('');
 
   const { data: cart, isLoading: cartLoading } = useQuery({
     queryKey: ['cart'],
     queryFn: async () => (await api.get<Cart>('/cart')).data,
+  });
+
+  const { data: savedAddresses } = useQuery({
+    queryKey: ['addresses'],
+    queryFn: async () => (await api.get<SavedAddress[]>('/addresses')).data,
+    enabled: !!user,
   });
 
   const {
@@ -84,6 +94,8 @@ export function CheckoutPage() {
             city: data.city.trim(),
           },
           note: data.note?.trim() || null,
+          couponCode: couponCode || null,
+          savedAddressId: savedAddressId || null,
         })
       ).data,
     onSuccess: (order) => {
@@ -107,7 +119,25 @@ export function CheckoutPage() {
     );
   }
 
-  const total = cart.subtotal + SHIPPING_FEE;
+  const total = cart.subtotal - discount + SHIPPING_FEE;
+
+  const applyCoupon = async () => {
+    try {
+      const { data } = await api.post<ValidateCouponResponse>('/coupons/validate', {
+        code: couponCode,
+        subtotal: cart!.subtotal,
+      });
+      if (data.valid) {
+        setDiscount(data.discountAmount);
+        setCouponMsg(`Áp dụng mã ${data.code}: -${data.discountAmount.toLocaleString('vi-VN')}đ`);
+      } else {
+        setDiscount(0);
+        setCouponMsg(data.message ?? 'Mã không hợp lệ');
+      }
+    } catch {
+      setCouponMsg('Không kiểm tra được mã');
+    }
+  };
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
@@ -125,6 +155,20 @@ export function CheckoutPage() {
       >
         <Card className="lg:col-span-3 border-brand-100">
           <h2 className="text-lg font-semibold text-brand-900">Địa chỉ giao hàng</h2>
+          {savedAddresses && savedAddresses.length > 0 && (
+            <select
+              className="mt-3 w-full rounded-lg border border-brand-200 px-3 py-2 text-sm"
+              value={savedAddressId}
+              onChange={(e) => setSavedAddressId(e.target.value)}
+            >
+              <option value="">Nhập địa chỉ mới</option>
+              {savedAddresses.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.label} — {a.fullName}, {a.city}
+                </option>
+              ))}
+            </select>
+          )}
           <div className="mt-5 space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <Input label="Họ tên người nhận" {...register('fullName')} error={errors.fullName?.message} />
@@ -158,9 +202,28 @@ export function CheckoutPage() {
               <span>Tạm tính</span>
               <span>{formatCurrency(cart.subtotal)}</span>
             </div>
+            {discount > 0 && (
+              <div className="flex justify-between text-emerald-700">
+                <span>Giảm giá</span>
+                <span>-{formatCurrency(discount)}</span>
+              </div>
+            )}
             <div className="flex justify-between text-slate-600">
               <span>Phí vận chuyển</span>
               <span>{formatCurrency(SHIPPING_FEE)}</span>
+            </div>
+            <div className="pt-2">
+              <div className="flex gap-2">
+                <Input
+                  label="Mã giảm giá"
+                  value={couponCode}
+                  onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                />
+                <Button type="button" variant="secondary" className="mt-6 shrink-0" onClick={applyCoupon}>
+                  Áp dụng
+                </Button>
+              </div>
+              {couponMsg && <p className="text-xs text-brand-700">{couponMsg}</p>}
             </div>
             <div className="flex justify-between border-t border-brand-100 pt-3 text-lg font-bold text-brand-800">
               <span>Tổng thanh toán</span>

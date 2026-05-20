@@ -10,3 +10,6 @@ public record AuthResponse(string AccessToken, string RefreshToken, DateTime Exp
 public record UserDto(string Id, string Email, string FullName, string? Phone, UserRole Role);
 public record UpdateProfileRequest(string FullName, string? Phone);
 public record ChangePasswordRequest(string CurrentPassword, string NewPassword);
+public record ForgotPasswordRequest(string Email);
+public record ConfirmPasswordResetRequest(string Token, string NewPassword);
+public record ForgotPasswordResponse(string Message, string? ResetToken);

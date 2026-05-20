@@ -1,10 +1,32 @@
 import { Link } from '@tanstack/react-router';
 import { motion } from 'framer-motion';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import api from '@/lib/api';
+import { useAuthStore } from '@/stores/authStore';
 import type { Product } from '@/types';
 import { formatCurrency } from '@/lib/format';
 import { Card } from '@/components/ui/Card';
 
 export function ProductCard({ product, index = 0 }: { product: Product; index?: number }) {
+  const user = useAuthStore((s) => s.user);
+  const qc = useQueryClient();
+
+  const { data: wishlist } = useQuery({
+    queryKey: ['wishlist'],
+    queryFn: async () => (await api.get<{ items: { productId: string }[] }>('/wishlist')).data,
+    enabled: !!user,
+  });
+
+  const isWished = wishlist?.items.some((i) => i.productId === product.id);
+
+  const toggleWish = useMutation({
+    mutationFn: async () => {
+      if (isWished) await api.delete(`/wishlist/${product.id}`);
+      else await api.post(`/wishlist/${product.id}`);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['wishlist'] }),
+  });
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -12,8 +34,20 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
       transition={{ duration: 0.35, delay: index * 0.05, ease: 'easeOut' }}
       whileHover={{ y: -4 }}
     >
-      <Link to="/san-pham/$slug" params={{ slug: product.slug }}>
-        <Card className="group overflow-hidden transition-shadow hover:border-brand-300 hover:shadow-lg">
+      <Card className="group relative overflow-hidden transition-shadow hover:border-brand-300 hover:shadow-lg">
+        {user && (
+          <button
+            type="button"
+            className="absolute right-2 top-2 z-10 rounded-full bg-white/90 px-2 py-1 text-lg shadow"
+            onClick={(e) => {
+              e.preventDefault();
+              toggleWish.mutate();
+            }}
+          >
+            {isWished ? '❤️' : '🤍'}
+          </button>
+        )}
+        <Link to="/san-pham/$slug" params={{ slug: product.slug }}>
           <motion.div
             className="aspect-square overflow-hidden rounded-lg bg-slate-100"
             whileHover={{ scale: 1.03 }}
@@ -30,8 +64,8 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
           {product.stock !== undefined && product.stock <= 5 && (
             <p className="mt-1 text-xs text-amber-600">Chỉ còn {product.stock} sản phẩm</p>
           )}
-        </Card>
-      </Link>
+        </Link>
+      </Card>
     </motion.div>
   );
 }

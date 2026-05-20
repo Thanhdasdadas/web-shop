@@ -12,6 +12,8 @@ public interface IProductRepository : IRepository<Product>
         bool? isPublished,
         string? sortBy,
         bool? inStockOnly,
+        decimal? minPrice,
+        decimal? maxPrice,
         int page,
         int pageSize,
         CancellationToken ct = default);

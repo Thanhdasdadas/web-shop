@@ -10,6 +10,8 @@ public class Order : BaseEntity
     public List<OrderItem> Items { get; set; } = [];
     public ShippingAddress ShippingAddress { get; set; } = new();
     public decimal Subtotal { get; set; }
+    public decimal DiscountAmount { get; set; }
+    public string? CouponCode { get; set; }
     public decimal ShippingFee { get; set; }
     public decimal Total { get; set; }
     public OrderStatus Status { get; set; } = OrderStatus.Pending;

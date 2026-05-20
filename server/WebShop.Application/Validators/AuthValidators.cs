@@ -33,6 +33,20 @@ public class GoogleLoginRequestValidator : AbstractValidator<GoogleLoginRequest>
     public GoogleLoginRequestValidator() => RuleFor(x => x.IdToken).NotEmpty();
 }
 
+public class ForgotPasswordRequestValidator : AbstractValidator<ForgotPasswordRequest>
+{
+    public ForgotPasswordRequestValidator() => RuleFor(x => x.Email).NotEmpty().EmailAddress();
+}
+
+public class ConfirmPasswordResetRequestValidator : AbstractValidator<ConfirmPasswordResetRequest>
+{
+    public ConfirmPasswordResetRequestValidator()
+    {
+        RuleFor(x => x.Token).NotEmpty();
+        RuleFor(x => x.NewPassword).NotEmpty().MinimumLength(6);
+    }
+}
+
 public class ChangePasswordRequestValidator : AbstractValidator<ChangePasswordRequest>
 {
     public ChangePasswordRequestValidator()

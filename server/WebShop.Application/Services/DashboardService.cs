@@ -34,7 +34,7 @@ public class DashboardService(
             o.Items.Select(i => new OrderItemDto(i.ProductId, i.ProductName, i.Sku, i.UnitPrice, i.Quantity, i.LineTotal)).ToList(),
             new ShippingAddressDto(o.ShippingAddress.FullName, o.ShippingAddress.Phone, o.ShippingAddress.AddressLine,
                 o.ShippingAddress.Ward, o.ShippingAddress.District, o.ShippingAddress.City),
-            o.Subtotal, o.ShippingFee, o.Total, o.Note, o.CreatedAt)).ToList();
+            o.Subtotal, o.DiscountAmount, o.CouponCode, o.ShippingFee, o.Total, o.Note, o.CreatedAt)).ToList();
 
         return new DashboardSummaryDto(totalRevenue, allOrders.Count, ordersByStatus, lowStock, recentDtos);
     }

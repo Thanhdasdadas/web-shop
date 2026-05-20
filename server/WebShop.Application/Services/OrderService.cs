@@ -13,6 +13,8 @@ public class OrderService(
     ICartRepository carts,
     IProductRepository products,
     IInventoryRepository inventory,
+    ICouponService coupons,
+    ISavedAddressService savedAddresses,
     IValidator<CreateOrderRequest> createOrderValidator) : IOrderService
 {
     private const decimal DefaultShippingFee = 30000m;
@@ -29,6 +31,9 @@ public class OrderService(
 
         if (cart == null || cart.Items.Count == 0)
             throw new AppException("Giỏ hàng trống.");
+
+        var shipping = await savedAddresses.ResolveForCheckoutAsync(
+            userId, request.SavedAddressId, request.ShippingAddress, ct);
 
         var orderItems = new List<OrderItem>();
         decimal subtotal = 0;
@@ -53,6 +58,14 @@ public class OrderService(
             subtotal += product.Price * cartItem.Quantity;
         }
 
+        decimal discount = 0;
+        string? couponCode = null;
+        if (!string.IsNullOrWhiteSpace(request.CouponCode))
+        {
+            discount = await coupons.ApplyAndIncrementAsync(request.CouponCode, subtotal, ct);
+            couponCode = request.CouponCode.Trim().ToUpperInvariant();
+        }
+
         var order = new Order
         {
             OrderNumber = $"WS{DateTime.UtcNow:yyyyMMddHHmmss}{Random.Shared.Next(1000, 9999)}",
@@ -60,16 +73,18 @@ public class OrderService(
             Items = orderItems,
             ShippingAddress = new ShippingAddress
             {
-                FullName = request.ShippingAddress.FullName,
-                Phone = request.ShippingAddress.Phone,
-                AddressLine = request.ShippingAddress.AddressLine,
-                Ward = request.ShippingAddress.Ward ?? string.Empty,
-                District = request.ShippingAddress.District,
-                City = request.ShippingAddress.City
+                FullName = shipping.FullName,
+                Phone = shipping.Phone,
+                AddressLine = shipping.AddressLine,
+                Ward = shipping.Ward ?? string.Empty,
+                District = shipping.District,
+                City = shipping.City
             },
             Subtotal = subtotal,
+            DiscountAmount = discount,
+            CouponCode = couponCode,
             ShippingFee = DefaultShippingFee,
-            Total = subtotal + DefaultShippingFee,
+            Total = subtotal - discount + DefaultShippingFee,
             Status = OrderStatus.Pending,
             PaymentMethod = PaymentMethod.COD,
             PaymentStatus = PaymentStatus.Pending,
@@ -178,5 +193,5 @@ public class OrderService(
         o.Items.Select(i => new OrderItemDto(i.ProductId, i.ProductName, i.Sku, i.UnitPrice, i.Quantity, i.LineTotal)).ToList(),
         new ShippingAddressDto(o.ShippingAddress.FullName, o.ShippingAddress.Phone, o.ShippingAddress.AddressLine,
             o.ShippingAddress.Ward, o.ShippingAddress.District, o.ShippingAddress.City),
-        o.Subtotal, o.ShippingFee, o.Total, o.Note, o.CreatedAt);
+        o.Subtotal, o.DiscountAmount, o.CouponCode, o.ShippingFee, o.Total, o.Note, o.CreatedAt);
 }

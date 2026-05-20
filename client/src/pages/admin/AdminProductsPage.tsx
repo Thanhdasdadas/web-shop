@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
 import { StatCard } from '@/components/admin/StatCard';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { downloadExport } from '@/lib/downloadBlob';
 import { Modal, ModalActions } from '@/components/admin/Modal';
 import { ProductImageField } from '@/components/admin/ProductImageField';
 import { parseImageUrls, slugify } from '@/lib/slug';
@@ -280,7 +281,14 @@ export function AdminProductsPage() {
       <AdminPageHeader
         title="Quản lý mỹ phẩm"
         description="Thêm, chỉnh sửa và ẩn/hiện sản phẩm"
-        action={<Button onClick={openCreate}>+ Sản phẩm mới</Button>}
+        action={
+          <div className="flex gap-2">
+            <Button variant="secondary" onClick={() => downloadExport('/admin/export/products', 'san-pham.xlsx')}>
+              Xuất Excel
+            </Button>
+            <Button onClick={openCreate}>+ Sản phẩm mới</Button>
+          </div>
+        }
       />
 
       <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

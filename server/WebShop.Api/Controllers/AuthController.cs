@@ -59,4 +59,17 @@ public class AuthController(IAuthService auth, IUserRepository users) : Controll
         await auth.ChangePasswordAsync(User.GetUserId(), request, ct);
         return NoContent();
     }
+
+    [AllowAnonymous]
+    [HttpPost("forgot-password")]
+    public async Task<ActionResult<ForgotPasswordResponse>> ForgotPassword([FromBody] ForgotPasswordRequest request, CancellationToken ct) =>
+        Ok(await auth.ForgotPasswordAsync(request, ct));
+
+    [AllowAnonymous]
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword([FromBody] ConfirmPasswordResetRequest request, CancellationToken ct)
+    {
+        await auth.ResetPasswordAsync(request, ct);
+        return NoContent();
+    }
 }

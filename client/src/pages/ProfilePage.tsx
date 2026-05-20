@@ -9,6 +9,7 @@ import { Breadcrumb } from '@/components/Breadcrumb';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { AddressBookSection } from '@/components/address/AddressBookSection';
 
 export function ProfilePage() {
   const user = useAuthStore((s) => s.user);
@@ -89,6 +90,8 @@ export function ProfilePage() {
           Đổi mật khẩu
         </Button>
       </Card>
+
+      <AddressBookSection />
     </div>
   );
 }

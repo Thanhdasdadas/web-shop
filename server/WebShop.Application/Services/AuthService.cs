@@ -9,12 +9,14 @@ namespace WebShop.Application.Services;
 public class AuthService(
     IUserRepository users,
     IRefreshTokenRepository refreshTokens,
+    IPasswordResetTokenRepository passwordResetTokens,
     IPasswordHasher passwordHasher,
     IJwtTokenService jwt,
     IGoogleTokenValidator googleValidator) : IAuthService
 {
     private const int RefreshTokenDaysShort = 1;
     private const int RefreshTokenDaysLong = 30;
+    private const int ResetTokenHours = 1;
 
     public async Task<AuthResponse> RegisterAsync(RegisterRequest request, CancellationToken ct = default)
     {
@@ -155,6 +157,48 @@ public class AuthService(
             stored.IsRevoked = true;
             await refreshTokens.UpdateAsync(stored, ct);
         }
+    }
+
+    public async Task<ForgotPasswordResponse> ForgotPasswordAsync(ForgotPasswordRequest request, CancellationToken ct = default)
+    {
+        var user = await users.GetByEmailAsync(request.Email.ToLowerInvariant(), ct);
+        if (user == null)
+            return new ForgotPasswordResponse("Nếu email tồn tại, bạn sẽ nhận hướng dẫn đặt lại mật khẩu.", null);
+
+        var rawToken = jwt.GenerateRefreshToken();
+        await passwordResetTokens.InsertAsync(new PasswordResetToken
+        {
+            UserId = user.Id,
+            TokenHash = jwt.HashRefreshToken(rawToken),
+            ExpiresAt = DateTime.UtcNow.AddHours(ResetTokenHours)
+        }, ct);
+
+        var isDev = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
+        return new ForgotPasswordResponse(
+            "Token đặt lại mật khẩu đã được tạo.",
+            isDev ? rawToken : null);
+    }
+
+    public async Task ResetPasswordAsync(ConfirmPasswordResetRequest request, CancellationToken ct = default)
+    {
+        var hash = jwt.HashRefreshToken(request.Token);
+        var stored = await passwordResetTokens.GetByTokenHashAsync(hash, ct)
+            ?? throw new AppException("Link đặt lại mật khẩu không hợp lệ.", 400);
+
+        if (stored.IsUsed || stored.ExpiresAt < DateTime.UtcNow)
+            throw new AppException("Link đã hết hạn.", 400);
+
+        var user = await users.GetByIdAsync(stored.UserId, ct)
+            ?? throw new AppException("Người dùng không tồn tại.");
+
+        var (pwdHash, salt) = passwordHasher.HashWithNewSalt(request.NewPassword);
+        user.PasswordHash = pwdHash;
+        user.PasswordSalt = salt;
+        user.UpdatedAt = DateTime.UtcNow;
+        await users.UpdateAsync(user, ct);
+
+        stored.IsUsed = true;
+        await passwordResetTokens.UpdateAsync(stored, ct);
     }
 
     private async Task<AuthResponse> CreateAuthResponseAsync(User user, bool rememberMe, CancellationToken ct)

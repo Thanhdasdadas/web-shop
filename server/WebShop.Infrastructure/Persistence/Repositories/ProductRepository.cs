@@ -23,6 +23,8 @@ public class ProductRepository(MongoDbContext context) : MongoRepository<Product
         bool? isPublished,
         string? sortBy,
         bool? inStockOnly,
+        decimal? minPrice,
+        decimal? maxPrice,
         int page,
         int pageSize,
         CancellationToken ct = default)
@@ -40,6 +42,10 @@ public class ProductRepository(MongoDbContext context) : MongoRepository<Product
             filter &= Builders<Product>.Filter.Eq(p => p.CategoryId, categoryId);
         if (isPublished.HasValue)
             filter &= Builders<Product>.Filter.Eq(p => p.IsPublished, isPublished.Value);
+        if (minPrice.HasValue)
+            filter &= Builders<Product>.Filter.Gte(p => p.Price, minPrice.Value);
+        if (maxPrice.HasValue)
+            filter &= Builders<Product>.Filter.Lte(p => p.Price, maxPrice.Value);
 
         if (inStockOnly == true)
         {

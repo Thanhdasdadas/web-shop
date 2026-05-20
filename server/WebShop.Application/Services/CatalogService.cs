@@ -45,7 +45,7 @@ public class CatalogService(
         var isPublished = publishedOnly ? true : query.IsPublished;
         var paged = await products.GetPagedAsync(
             query.Search, query.CategoryId, isPublished, query.SortBy, query.InStockOnly,
-            query.Page, query.PageSize, ct);
+            query.MinPrice, query.MaxPrice, query.Page, query.PageSize, ct);
         var items = new List<ProductDto>();
         foreach (var p in paged.Items)
             items.Add(await MapProductAsync(p, ct));

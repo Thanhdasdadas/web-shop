@@ -15,6 +15,8 @@ type ProductSearch = {
   search?: string;
   sortBy?: string;
   inStockOnly?: boolean;
+  minPrice?: number;
+  maxPrice?: number;
 };
 
 const sortOptions = [
@@ -31,6 +33,8 @@ export function ProductsPage() {
   const [q, setQ] = useState(search.search ?? '');
   const sortBy = search.sortBy ?? 'newest';
   const inStockOnly = search.inStockOnly ?? false;
+  const [minPrice, setMinPrice] = useState(search.minPrice?.toString() ?? '');
+  const [maxPrice, setMaxPrice] = useState(search.maxPrice?.toString() ?? '');
 
   const { data: categories } = useQuery({
     queryKey: ['categories'],
@@ -38,7 +42,7 @@ export function ProductsPage() {
   });
 
   const { data, isLoading } = useQuery({
-    queryKey: ['products', page, search.categoryId, search.search, sortBy, inStockOnly],
+    queryKey: ['products', page, search.categoryId, search.search, sortBy, inStockOnly, search.minPrice, search.maxPrice],
     queryFn: async () =>
       (
         await api.get<PagedResult<Product>>('/products', {
@@ -49,6 +53,8 @@ export function ProductsPage() {
             search: search.search || undefined,
             sortBy,
             inStockOnly: inStockOnly || undefined,
+            minPrice: search.minPrice,
+            maxPrice: search.maxPrice,
           },
         })
       ).data,
@@ -119,7 +125,30 @@ export function ProductsPage() {
           />
           Chỉ còn hàng
         </label>
-        <Button type="button" variant="secondary" onClick={applySearch}>
+        <div className="w-full sm:w-36">
+          <Input label="Giá từ" type="number" value={minPrice} onChange={(e) => setMinPrice(e.target.value)} />
+        </div>
+        <div className="w-full sm:w-36">
+          <Input label="Giá đến" type="number" value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} />
+        </div>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() => {
+            setPage(1);
+            navigate({
+              to: '/san-pham',
+              search: {
+                categoryId: search.categoryId,
+                search: search.search,
+                sortBy,
+                inStockOnly: inStockOnly || undefined,
+                minPrice: minPrice ? Number(minPrice) : undefined,
+                maxPrice: maxPrice ? Number(maxPrice) : undefined,
+              },
+            });
+          }}
+        >
           Lọc
         </Button>
       </div>

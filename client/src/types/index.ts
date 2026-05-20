@@ -88,10 +88,79 @@ export interface Order {
   items: OrderItem[];
   shippingAddress: ShippingAddress;
   subtotal: number;
+  discountAmount: number;
+  couponCode?: string | null;
   shippingFee: number;
   total: number;
   note?: string;
   createdAt: string;
+}
+
+export type CouponDiscountType = 'Percent' | 'Fixed';
+
+export interface Coupon {
+  id: string;
+  code: string;
+  discountType: CouponDiscountType;
+  value: number;
+  minOrderAmount: number;
+  maxDiscount?: number | null;
+  expiresAt?: string | null;
+  usageLimit?: number | null;
+  usedCount: number;
+  isActive: boolean;
+}
+
+export interface ValidateCouponResponse {
+  valid: boolean;
+  message?: string | null;
+  discountAmount: number;
+  code?: string | null;
+}
+
+export interface SavedAddress {
+  id: string;
+  label: string;
+  fullName: string;
+  phone: string;
+  addressLine: string;
+  ward: string;
+  district: string;
+  city: string;
+  isDefault: boolean;
+}
+
+export interface Review {
+  id: string;
+  productId: string;
+  userId: string;
+  userFullName: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+}
+
+export interface ProductReviewSummary {
+  averageRating: number;
+  totalCount: number;
+  items: Review[];
+}
+
+export interface WishlistItem {
+  productId: string;
+  name: string;
+  slug: string;
+  price: number;
+  image?: string | null;
+  stock?: number | null;
+}
+
+export interface SalesReport {
+  totalRevenue: number;
+  totalOrders: number;
+  deliveredOrders: number;
+  revenueByPeriod: { label: string; revenue: number; orderCount: number }[];
+  topProducts: { productId: string; productName: string; quantitySold: number; revenue: number }[];
 }
 
 export interface DashboardSummary {

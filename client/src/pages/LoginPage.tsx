@@ -94,6 +94,11 @@ export function LoginPage() {
 
         <GoogleSignInButton onSuccess={handleGoogle} disabled={loading} />
 
+        <p className="mt-2 text-center text-sm">
+          <Link to="/quen-mat-khau" className="text-brand-600 hover:underline">
+            Quên mật khẩu?
+          </Link>
+        </p>
         <p className="mt-4 text-center text-sm text-slate-600">
           Chưa có tài khoản?{' '}
           <Link to="/dang-ky" className="text-brand-600 hover:underline">

@@ -8,6 +8,7 @@ using WebShop.Application.Interfaces;
 using WebShop.Application.Services;
 using WebShop.Domain.Entities;
 using WebShop.Infrastructure.Auth;
+using WebShop.Infrastructure.Export;
 using WebShop.Infrastructure.Persistence;
 using WebShop.Infrastructure.Persistence.Repositories;
 using WebShop.Infrastructure.Seed;
@@ -48,11 +49,17 @@ public static class DependencyInjection
         services.AddScoped<ICartRepository, CartRepository>();
         services.AddScoped<IOrderRepository, OrderRepository>();
         services.AddScoped<IOrderStatusHistoryRepository, OrderStatusHistoryRepository>();
+        services.AddScoped<ICouponRepository, CouponRepository>();
+        services.AddScoped<ISavedAddressRepository, SavedAddressRepository>();
+        services.AddScoped<IReviewRepository, ReviewRepository>();
+        services.AddScoped<IWishlistRepository, WishlistRepository>();
+        services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
         services.AddScoped<IRepository<InventoryLog>, MongoRepository<InventoryLog>>();
 
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<IGoogleTokenValidator, GoogleTokenValidator>();
+        services.AddScoped<IExportService, ExportService>();
         services.AddScoped<DataSeeder>();
 
         var jwt = configuration.GetSection(JwtSettings.SectionName).Get<JwtSettings>() ?? new JwtSettings();

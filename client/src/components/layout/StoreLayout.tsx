@@ -47,6 +47,9 @@ export function StoreLayout() {
                 <Link to="/tai-khoan" className="hover:text-brand-600">
                   Tài khoản
                 </Link>
+                <Link to="/yeu-thich" className="hover:text-brand-600">
+                  Yêu thích
+                </Link>
               </>
             )}
             {isStaffOrAdmin() && (
@@ -117,6 +120,11 @@ export function StoreLayout() {
                   <li>
                     <Link to="/tai-khoan" onClick={() => setMenuOpen(false)}>
                       Tài khoản
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/yeu-thich" onClick={() => setMenuOpen(false)}>
+                      Yêu thích
                     </Link>
                   </li>
                 </>
