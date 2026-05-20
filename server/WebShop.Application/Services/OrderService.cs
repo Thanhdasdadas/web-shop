@@ -92,6 +92,10 @@ public class OrderService(
         };
 
         await orders.InsertAsync(order, ct);
+
+        foreach (var item in orderItems)
+            await products.IncrementMetricAsync(item.ProductId, ProductMetricType.Purchase, item.Quantity, ct);
+
         await history.InsertAsync(new OrderStatusHistory
         {
             OrderId = order.Id,

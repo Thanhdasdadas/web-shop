@@ -51,12 +51,13 @@ export function AdminProductsPage() {
   const [searchInput, setSearchInput] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [publishedFilter, setPublishedFilter] = useState<'' | 'true' | 'false'>('');
+  const [sortBy, setSortBy] = useState('');
   const [showCreate, setShowCreate] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [formError, setFormError] = useState('');
 
-  const queryKey = ['admin-products', page, search, categoryFilter, publishedFilter];
+  const queryKey = ['admin-products', page, search, categoryFilter, publishedFilter, sortBy];
 
   const { data: summary } = useQuery({
     queryKey: ['admin-products-summary'],
@@ -79,6 +80,7 @@ export function AdminProductsPage() {
             search: search || undefined,
             categoryId: categoryFilter || undefined,
             isPublished: publishedFilter === '' ? undefined : publishedFilter === 'true',
+            sortBy: sortBy || undefined,
           },
         })
       ).data,
@@ -183,6 +185,9 @@ export function AdminProductsPage() {
     col.accessor('categoryName', { header: 'Danh mục', cell: (i) => i.getValue() ?? '—' }),
     col.accessor('price', { header: 'Giá', cell: (i) => formatCurrency(i.getValue()) }),
     col.accessor('stock', { header: 'Tồn', cell: (i) => i.getValue() ?? 0 }),
+    col.accessor('viewCount', { header: 'View', cell: (i) => (i.getValue() ?? 0).toLocaleString('vi-VN') }),
+    col.accessor('clickCount', { header: 'Click', cell: (i) => (i.getValue() ?? 0).toLocaleString('vi-VN') }),
+    col.accessor('purchaseCount', { header: 'Mua', cell: (i) => (i.getValue() ?? 0).toLocaleString('vi-VN') }),
     col.accessor('isPublished', {
       header: 'Hiển thị',
       cell: ({ row }) => (
@@ -291,11 +296,14 @@ export function AdminProductsPage() {
         }
       />
 
-      <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
         <StatCard label="Tổng SP" value={summary?.total ?? '—'} />
         <StatCard label="Đang bán" value={summary?.published ?? '—'} />
         <StatCard label="Đang ẩn" value={summary?.unpublished ?? '—'} />
         <StatCard label="Sắp hết hàng" value={summary?.lowStock ?? '—'} hint="Dưới ngưỡng tồn kho" />
+        <StatCard label="Tổng view" value={(summary?.totalViews ?? 0).toLocaleString('vi-VN')} />
+        <StatCard label="Tổng click" value={(summary?.totalClicks ?? 0).toLocaleString('vi-VN')} />
+        <StatCard label="Tổng mua" value={(summary?.totalPurchases ?? 0).toLocaleString('vi-VN')} hint="Số lượng SP đã bán" />
       </div>
 
       <Card className="mb-4">
@@ -340,6 +348,22 @@ export function AdminProductsPage() {
               <option value="">Tất cả</option>
               <option value="true">Đang bán</option>
               <option value="false">Đang ẩn</option>
+            </select>
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-brand-900/80">Sắp xếp</label>
+            <select
+              className="rounded-xl border border-brand-200 px-3 py-2 text-sm"
+              value={sortBy}
+              onChange={(e) => {
+                setSortBy(e.target.value);
+                setPage(1);
+              }}
+            >
+              <option value="">Mới nhất</option>
+              <option value="views_desc">View cao nhất</option>
+              <option value="clicks_desc">Click cao nhất</option>
+              <option value="purchases_desc">Mua nhiều nhất</option>
             </select>
           </div>
           <Button variant="secondary" onClick={() => { setSearch(searchInput); setPage(1); }}>

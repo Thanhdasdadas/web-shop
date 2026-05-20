@@ -2,12 +2,31 @@ using MongoDB.Driver;
 using WebShop.Application.Common;
 using WebShop.Application.Interfaces;
 using WebShop.Domain.Entities;
+using WebShop.Domain.Enums;
 
 namespace WebShop.Infrastructure.Persistence.Repositories;
 
 public class ProductRepository(MongoDbContext context) : MongoRepository<Product>(context), IProductRepository
 {
     private readonly MongoDbContext _db = context;
+
+    public async Task<bool> IncrementMetricAsync(string productId, ProductMetricType metric, int amount = 1, CancellationToken ct = default)
+    {
+        if (amount <= 0) return false;
+        var field = metric switch
+        {
+            ProductMetricType.View => nameof(Product.ViewCount),
+            ProductMetricType.Click => nameof(Product.ClickCount),
+            ProductMetricType.Purchase => nameof(Product.PurchaseCount),
+            _ => throw new ArgumentOutOfRangeException(nameof(metric))
+        };
+        var update = Builders<Product>.Update
+            .Inc(field, amount)
+            .Set(p => p.UpdatedAt, DateTime.UtcNow);
+        var result = await Collection.UpdateOneAsync(p => p.Id == productId, update, cancellationToken: ct);
+        return result.ModifiedCount > 0 || result.MatchedCount > 0;
+    }
+
     public async Task<Product?> GetBySlugAsync(string slug, CancellationToken ct = default) =>
         await Collection.Find(p => p.Slug == slug).FirstOrDefaultAsync(ct);
 
@@ -59,6 +78,9 @@ public class ProductRepository(MongoDbContext context) : MongoRepository<Product
             "price_asc" => Builders<Product>.Sort.Ascending(p => p.Price),
             "price_desc" => Builders<Product>.Sort.Descending(p => p.Price),
             "name_asc" => Builders<Product>.Sort.Ascending(p => p.Name),
+            "views_desc" => Builders<Product>.Sort.Descending(p => p.ViewCount),
+            "clicks_desc" => Builders<Product>.Sort.Descending(p => p.ClickCount),
+            "purchases_desc" => Builders<Product>.Sort.Descending(p => p.PurchaseCount),
             _ => Builders<Product>.Sort.Descending(p => p.CreatedAt),
         };
 

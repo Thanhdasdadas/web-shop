@@ -6,7 +6,8 @@ public record UpdateCategoryRequest(string Name, string Slug, bool IsActive);
 
 public record ProductDto(
     string Id, string Name, string Slug, string Description, List<string> Images,
-    decimal Price, string CategoryId, string? CategoryName, string Sku, bool IsPublished, int? Stock);
+    decimal Price, string CategoryId, string? CategoryName, string Sku, bool IsPublished, int? Stock,
+    long ViewCount, long ClickCount, long PurchaseCount);
 
 public record CreateProductRequest(
     string Name, string Slug, string Description, List<string> Images,
@@ -16,7 +17,7 @@ public record UpdateProductRequest(
     string Name, string Slug, string Description, List<string> Images,
     decimal Price, string CategoryId, string Sku, bool IsPublished);
 
-/// <summary>newest | price_asc | price_desc | name_asc</summary>
+/// <summary>newest | price_asc | price_desc | name_asc | views_desc | clicks_desc | purchases_desc</summary>
 public record ProductQuery(
     string? Search,
     string? CategoryId,

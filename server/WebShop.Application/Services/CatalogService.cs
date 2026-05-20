@@ -58,7 +58,9 @@ public class CatalogService(
         var published = all.Count(p => p.IsPublished);
         var allInv = await inventory.GetAllAsync(ct);
         var lowStock = allInv.Count(i => i.QuantityOnHand <= i.LowStockThreshold);
-        return new ProductAdminSummaryDto(all.Count, published, all.Count - published, lowStock);
+        return new ProductAdminSummaryDto(
+            all.Count, published, all.Count - published, lowStock,
+            all.Sum(p => p.ViewCount), all.Sum(p => p.ClickCount), all.Sum(p => p.PurchaseCount));
     }
 
     public async Task<ProductDto> GetProductByIdAsync(string id, CancellationToken ct = default)
@@ -140,10 +142,24 @@ public class CatalogService(
         if (inv != null) await inventory.DeleteAsync(inv.Id, ct);
     }
 
+    public async Task TrackProductViewAsync(string productId, CancellationToken ct = default)
+    {
+        if (!await products.IncrementMetricAsync(productId, Domain.Enums.ProductMetricType.View, 1, ct))
+            throw new AppException("Sản phẩm không tồn tại.");
+    }
+
+    public async Task TrackProductClickAsync(string productId, CancellationToken ct = default)
+    {
+        if (!await products.IncrementMetricAsync(productId, Domain.Enums.ProductMetricType.Click, 1, ct))
+            throw new AppException("Sản phẩm không tồn tại.");
+    }
+
     private async Task<ProductDto> MapProductAsync(Product p, CancellationToken ct)
     {
         var cat = await categories.GetByIdAsync(p.CategoryId, ct);
         var inv = await inventory.GetByProductIdAsync(p.Id, ct);
-        return new ProductDto(p.Id, p.Name, p.Slug, p.Description, p.Images, p.Price, p.CategoryId, cat?.Name, p.Sku, p.IsPublished, inv?.QuantityOnHand);
+        return new ProductDto(
+            p.Id, p.Name, p.Slug, p.Description, p.Images, p.Price, p.CategoryId, cat?.Name, p.Sku, p.IsPublished,
+            inv?.QuantityOnHand, p.ViewCount, p.ClickCount, p.PurchaseCount);
     }
 }

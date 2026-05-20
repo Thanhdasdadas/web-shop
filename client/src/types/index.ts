@@ -36,6 +36,9 @@ export interface Product {
   sku: string;
   isPublished: boolean;
   stock?: number;
+  viewCount: number;
+  clickCount: number;
+  purchaseCount: number;
 }
 
 export interface PagedResult<T> {
@@ -203,4 +206,7 @@ export interface ProductAdminSummary {
   published: number;
   unpublished: number;
   lowStock: number;
+  totalViews: number;
+  totalClicks: number;
+  totalPurchases: number;
 }

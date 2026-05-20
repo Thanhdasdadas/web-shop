@@ -48,7 +48,10 @@ public class ExportService(IOrderRepository orders, IProductRepository products,
                 SKU = p.Sku,
                 Gia = p.Price,
                 Ton = inv?.QuantityOnHand ?? 0,
-                DaBan = p.IsPublished ? "Có" : "Ẩn"
+                LuotXem = p.ViewCount,
+                LuotClick = p.ClickCount,
+                LuotMua = p.PurchaseCount,
+                HienThi = p.IsPublished ? "Có" : "Ẩn"
             });
         }
         using var stream = new MemoryStream();

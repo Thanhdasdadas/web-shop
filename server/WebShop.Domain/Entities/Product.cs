@@ -11,4 +11,7 @@ public class Product : BaseEntity
     public string CategoryId { get; set; } = string.Empty;
     public string Sku { get; set; } = string.Empty;
     public bool IsPublished { get; set; }
+    public long ViewCount { get; set; }
+    public long ClickCount { get; set; }
+    public long PurchaseCount { get; set; }
 }

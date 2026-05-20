@@ -19,7 +19,9 @@ public record ResetPasswordRequest(string NewPassword);
 public record UpdateUserRoleRequest(UserRole Role);
 public record UpdateUserActiveRequest(bool IsActive);
 
-public record ProductAdminSummaryDto(long Total, long Published, long Unpublished, long LowStock);
+public record ProductAdminSummaryDto(
+    long Total, long Published, long Unpublished, long LowStock,
+    long TotalViews, long TotalClicks, long TotalPurchases);
 public record SetPublishRequest(bool IsPublished);
 
 public record OrderStatusHistoryDto(OrderStatus? FromStatus, OrderStatus ToStatus, string? Note, string ChangedBy, DateTime CreatedAt);

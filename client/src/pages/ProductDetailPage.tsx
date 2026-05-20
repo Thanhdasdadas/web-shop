@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link } from '@tanstack/react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
@@ -13,6 +13,7 @@ import { ProductGallery } from '@/components/ProductGallery';
 import { ProductCard } from '@/components/ProductCard';
 import { ProductGridSkeleton } from '@/components/ui/Skeleton';
 import { toast } from '@/stores/toastStore';
+import { trackProductView } from '@/lib/productAnalytics';
 
 export function ProductDetailPage() {
   const { slug } = useParams({ strict: false }) as { slug: string };
@@ -27,6 +28,10 @@ export function ProductDetailPage() {
     queryKey: ['product', slug],
     queryFn: async () => (await api.get<Product>(`/products/${slug}`)).data,
   });
+
+  useEffect(() => {
+    if (product?.id) trackProductView(product.id);
+  }, [product?.id]);
 
   const { data: related, isLoading: relatedLoading } = useQuery({
     queryKey: ['product-related', slug],

@@ -19,4 +19,6 @@ public interface ICatalogService
     Task<ProductDto> CreateProductAsync(CreateProductRequest request, CancellationToken ct = default);
     Task<ProductDto> UpdateProductAsync(string id, UpdateProductRequest request, CancellationToken ct = default);
     Task DeleteProductAsync(string id, CancellationToken ct = default);
+    Task TrackProductViewAsync(string productId, CancellationToken ct = default);
+    Task TrackProductClickAsync(string productId, CancellationToken ct = default);
 }

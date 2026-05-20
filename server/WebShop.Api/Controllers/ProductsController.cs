@@ -27,4 +27,20 @@ public class ProductsController(ICatalogService catalog) : ControllerBase
         var product = await catalog.GetProductBySlugAsync(slug, ct);
         return product == null ? NotFound() : Ok(product);
     }
+
+    [AllowAnonymous]
+    [HttpPost("{id}/track/view")]
+    public async Task<IActionResult> TrackView(string id, CancellationToken ct)
+    {
+        await catalog.TrackProductViewAsync(id, ct);
+        return NoContent();
+    }
+
+    [AllowAnonymous]
+    [HttpPost("{id}/track/click")]
+    public async Task<IActionResult> TrackClick(string id, CancellationToken ct)
+    {
+        await catalog.TrackProductClickAsync(id, ct);
+        return NoContent();
+    }
 }

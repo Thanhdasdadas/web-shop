@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router';
 import { motion } from 'framer-motion';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
+import { trackProductClick } from '@/lib/productAnalytics';
 import { useAuthStore } from '@/stores/authStore';
 import type { Product } from '@/types';
 import { formatCurrency } from '@/lib/format';
@@ -47,7 +48,11 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
             {isWished ? '❤️' : '🤍'}
           </button>
         )}
-        <Link to="/san-pham/$slug" params={{ slug: product.slug }}>
+        <Link
+          to="/san-pham/$slug"
+          params={{ slug: product.slug }}
+          onClick={() => trackProductClick(product.id)}
+        >
           <motion.div
             className="aspect-square overflow-hidden rounded-lg bg-slate-100"
             whileHover={{ scale: 1.03 }}
