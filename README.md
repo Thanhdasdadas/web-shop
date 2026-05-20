@@ -43,7 +43,7 @@ dotnet run
 
 API: http://localhost:5000 — Swagger: http://localhost:5000/swagger
 
-Lần chạy dev đầu sau khi chuyển sang mỹ phẩm: `Seed:ForceReseedCatalog: true` trong `appsettings.Development.json` sẽ thay catalog mẫu cũ. Sau đó đặt lại `false`.
+**Reset demo (tránh dữ liệu cũ):** Đăng nhập Admin → **Tổng quan** → mục *Reset dữ liệu demo*, gõ `RESET-DEMO` để xác nhận. API: `POST /api/admin/demo/reset` (bật khi `DemoReset:Enabled: true` trong Development, hoặc `ALLOW_DEMO_RESET=true` trên server).
 
 ### 3. Frontend
 

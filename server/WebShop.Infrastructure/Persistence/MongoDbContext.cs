@@ -22,6 +22,12 @@ public class MongoDbContext
         return _database.GetCollection<T>(name);
     }
 
+    public async Task<long> DeleteAllAsync<T>(CancellationToken ct = default) where T : BaseEntity
+    {
+        var result = await GetCollection<T>().DeleteManyAsync(FilterDefinition<T>.Empty, ct);
+        return result.DeletedCount;
+    }
+
     private static string GetCollectionName<T>()
     {
         var attr = typeof(T).GetCustomAttributes(typeof(BsonCollectionAttribute), true).FirstOrDefault() as BsonCollectionAttribute;

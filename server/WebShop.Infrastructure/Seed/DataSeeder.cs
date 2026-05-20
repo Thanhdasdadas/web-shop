@@ -1,13 +1,17 @@
 using Microsoft.Extensions.Logging;
+using MongoDB.Driver;
+using WebShop.Application.DTOs;
 using WebShop.Application.Interfaces;
 using WebShop.Domain.Entities;
 using WebShop.Domain.Enums;
+using WebShop.Infrastructure.Persistence;
 using WebShop.Infrastructure.Settings;
 using Microsoft.Extensions.Options;
 
 namespace WebShop.Infrastructure.Seed;
 
 public class DataSeeder(
+    MongoDbContext db,
     IUserRepository users,
     ICategoryRepository categories,
     IProductRepository products,
@@ -17,6 +21,43 @@ public class DataSeeder(
     IOptions<SeedSettings> seedOptions,
     ILogger<DataSeeder> logger)
 {
+    public const string DemoResetConfirmPhrase = "RESET-DEMO";
+
+    public async Task<DemoResetResultDto> ResetDemoDataAsync(CancellationToken ct = default)
+    {
+        logger.LogWarning("Reset dữ liệu demo — xóa đơn, giỏ, khách, catalog và seed lại mẫu Flower Knows.");
+
+        var ordersRemoved = (int)await db.DeleteAllAsync<Order>(ct);
+        await db.DeleteAllAsync<OrderStatusHistory>(ct);
+        await db.DeleteAllAsync<Cart>(ct);
+        await db.DeleteAllAsync<Review>(ct);
+        await db.DeleteAllAsync<Wishlist>(ct);
+        await db.DeleteAllAsync<SavedAddress>(ct);
+        await db.DeleteAllAsync<PasswordResetToken>(ct);
+        await db.DeleteAllAsync<RefreshToken>(ct);
+        await db.DeleteAllAsync<InventoryLog>(ct);
+        await db.DeleteAllAsync<Coupon>(ct);
+
+        var customerFilter = Builders<User>.Filter.Eq(u => u.Role, UserRole.Customer);
+        var customersRemoved = (int)(await db.GetCollection<User>().DeleteManyAsync(customerFilter, ct)).DeletedCount;
+
+        await ClearCatalogAsync(ct);
+        await SeedFlowerKnowsCatalogAsync(ct);
+        await EnsureSampleCouponsAsync(ct);
+
+        var productCount = await products.CountAsync(null, ct);
+        logger.LogInformation(
+            "Reset demo xong: {Orders} đơn, {Customers} khách, {Products} sản phẩm mẫu.",
+            ordersRemoved, customersRemoved, productCount);
+
+        return new DemoResetResultDto(
+            true,
+            "Đã reset dữ liệu demo. Catalog và mã GLOW10 đã được tạo lại.",
+            ordersRemoved,
+            customersRemoved,
+            (int)productCount);
+    }
+
     public async Task SeedAsync(CancellationToken ct = default)
     {
         await EnsureBootstrapAdminAsync(ct);

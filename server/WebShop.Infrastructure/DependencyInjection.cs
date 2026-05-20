@@ -39,6 +39,12 @@ public static class DependencyInjection
                 o.ClientId = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID") ?? "";
         });
         services.Configure<SeedSettings>(configuration.GetSection(SeedSettings.SectionName));
+        services.Configure<DemoResetSettings>(configuration.GetSection(DemoResetSettings.SectionName));
+        services.PostConfigure<DemoResetSettings>(opts =>
+        {
+            if (string.Equals(Environment.GetEnvironmentVariable("ALLOW_DEMO_RESET"), "true", StringComparison.OrdinalIgnoreCase))
+                opts.Enabled = true;
+        });
 
         services.AddSingleton<MongoDbContext>();
         services.AddScoped<IUserRepository, UserRepository>();
