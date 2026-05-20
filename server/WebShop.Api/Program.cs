@@ -6,6 +6,9 @@ using WebShop.Api.Middleware;
 using WebShop.Application;
 using WebShop.Infrastructure;
 using WebShop.Infrastructure.Seed;
+using WebShop.Api;
+
+EnvLoader.LoadFromSolutionRoot();
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -12,10 +12,15 @@ var pack = new ConventionPack
 };
 ConventionRegistry.Register("WebShopCamelCase", pack, _ => true);
 
+LoadDotEnv(FindEnvFile());
+
 const string connectionString = "mongodb://localhost:27017";
 const string databaseName = "webshop";
-const string adminEmail = "admin@webshop.vn";
-const string newPassword = "Admin@123";
+
+var adminEmail = Environment.GetEnvironmentVariable("BOOTSTRAP_ADMIN_EMAIL")?.Trim().ToLowerInvariant()
+    ?? "admin@glowbeauty.vn";
+var newPassword = Environment.GetEnvironmentVariable("BOOTSTRAP_ADMIN_PASSWORD")
+    ?? "Admin@123";
 
 var usersBson = new MongoClient(connectionString).GetDatabase(databaseName).GetCollection<BsonDocument>("users");
 var users = new MongoClient(connectionString).GetDatabase(databaseName).GetCollection<User>("users");
@@ -35,7 +40,7 @@ await usersBson.InsertOneAsync(new BsonDocument
     { "passwordHash", hash },
     { "passwordSalt", salt },
     { "fullName", "Quản trị viên" },
-    { "role", 2 },
+    { "role", (int)UserRole.Admin },
     { "isActive", true },
     { "createdAt", DateTime.UtcNow },
     { "updatedAt", DateTime.UtcNow },
@@ -47,8 +52,34 @@ var ok = user != null && hasher.Verify(newPassword, user.PasswordHash, user.Pass
 Console.WriteLine($"Đọc user + verify mật khẩu: {(ok ? "OK" : "FAIL")}");
 Console.WriteLine();
 Console.WriteLine($"Email:    {adminEmail}");
-Console.WriteLine($"Mật khẩu: {newPassword}");
+Console.WriteLine("(Mật khẩu = BOOTSTRAP_ADMIN_PASSWORD trong file .env ở thư mục WebShop)");
 Console.WriteLine();
-Console.WriteLine("QUAN TRỌNG: Dừng API cũ (Ctrl+C) rồi chạy lại:");
-Console.WriteLine("  cd server/WebShop.Api");
-Console.WriteLine("  dotnet run");
+Console.WriteLine("QUAN TRỌNG: Dừng API cũ (Ctrl+C) rồi chạy lại server/WebShop.Api");
+
+static string? FindEnvFile()
+{
+    var dir = new DirectoryInfo(AppContext.BaseDirectory);
+    while (dir is not null)
+    {
+        var candidate = Path.Combine(dir.FullName, ".env");
+        if (File.Exists(candidate)) return candidate;
+        dir = dir.Parent;
+    }
+    return null;
+}
+
+static void LoadDotEnv(string? path)
+{
+    if (path is null || !File.Exists(path)) return;
+    foreach (var raw in File.ReadAllLines(path))
+    {
+        var line = raw.Trim();
+        if (line.Length == 0 || line.StartsWith('#')) continue;
+        var eq = line.IndexOf('=');
+        if (eq <= 0) continue;
+        var key = line[..eq].Trim();
+        var value = line[(eq + 1)..].Trim();
+        if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable(key)))
+            Environment.SetEnvironmentVariable(key, value);
+    }
+}

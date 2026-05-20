@@ -52,7 +52,9 @@ export function LoginPage() {
           </Link>
         </p>
         <p className="mt-4 rounded-lg bg-brand-50 p-3 text-xs text-brand-700/80">
-          <span className="font-medium text-brand-800">Admin dev:</span> admin@webshop.vn / Admin@123
+          <span className="font-medium text-brand-800">Admin:</span> dùng email và mật khẩu trong file{' '}
+          <code className="text-brand-900">.env</code> (BOOTSTRAP_ADMIN_*). Nếu không vào được, chạy{' '}
+          <code className="text-brand-900">scripts/reset-admin</code> rồi khởi động lại API.
         </p>
       </Card>
     </div>
