@@ -22,6 +22,11 @@ public class AuthController(IAuthService auth, IUserRepository users) : Controll
         Ok(await auth.LoginAsync(request, ct));
 
     [AllowAnonymous]
+    [HttpPost("google")]
+    public async Task<ActionResult<AuthResponse>> Google([FromBody] GoogleLoginRequest request, CancellationToken ct) =>
+        Ok(await auth.GoogleLoginAsync(request, ct));
+
+    [AllowAnonymous]
     [HttpPost("refresh")]
     public async Task<ActionResult<AuthResponse>> Refresh([FromBody] RefreshRequest request, CancellationToken ct) =>
         Ok(await auth.RefreshAsync(request, ct));

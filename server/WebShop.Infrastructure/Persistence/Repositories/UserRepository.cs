@@ -11,6 +11,9 @@ public class UserRepository(MongoDbContext context) : MongoRepository<User>(cont
     public async Task<User?> GetByEmailAsync(string email, CancellationToken ct = default) =>
         await Collection.Find(u => u.Email == email).FirstOrDefaultAsync(ct);
 
+    public async Task<User?> GetByGoogleIdAsync(string googleId, CancellationToken ct = default) =>
+        await Collection.Find(u => u.GoogleId == googleId).FirstOrDefaultAsync(ct);
+
     public async Task<bool> AnyAdminExistsAsync(CancellationToken ct = default) =>
         await Collection.CountDocumentsAsync(u => u.Role == UserRole.Admin, cancellationToken: ct) > 0;
 

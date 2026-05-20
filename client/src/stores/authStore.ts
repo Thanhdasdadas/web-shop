@@ -1,12 +1,18 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import type { User, UserRole } from '@/types';
+import {
+  authPersistStorage,
+  clearAuthItems,
+  setAuthItem,
+  setRememberMe,
+} from '@/lib/authStorage';
 
 interface AuthState {
   user: User | null;
   accessToken: string | null;
   refreshToken: string | null;
-  setAuth: (user: User, accessToken: string, refreshToken: string) => void;
+  setAuth: (user: User, accessToken: string, refreshToken: string, rememberMe?: boolean) => void;
   setUser: (user: User) => void;
   logout: () => void;
   isStaffOrAdmin: () => boolean;
@@ -20,15 +26,15 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       accessToken: null,
       refreshToken: null,
-      setAuth: (user, accessToken, refreshToken) => {
-        localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('refreshToken', refreshToken);
+      setAuth: (user, accessToken, refreshToken, rememberMe = true) => {
+        setRememberMe(rememberMe);
+        setAuthItem('accessToken', accessToken);
+        setAuthItem('refreshToken', refreshToken);
         set({ user, accessToken, refreshToken });
       },
       setUser: (user) => set({ user }),
       logout: () => {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
+        clearAuthItems(['accessToken', 'refreshToken']);
         set({ user: null, accessToken: null, refreshToken: null });
       },
       isStaffOrAdmin: () => {
@@ -41,6 +47,10 @@ export const useAuthStore = create<AuthState>()(
         return role ? roles.includes(role) : false;
       },
     }),
-    { name: 'webshop-auth', partialize: (s) => ({ user: s.user, accessToken: s.accessToken, refreshToken: s.refreshToken }) }
+    {
+      name: 'webshop-auth',
+      storage: createJSONStorage(() => authPersistStorage),
+      partialize: (s) => ({ user: s.user, accessToken: s.accessToken, refreshToken: s.refreshToken }),
+    }
   )
 );

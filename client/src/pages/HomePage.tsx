@@ -99,8 +99,8 @@ export function HomePage() {
           </div>
         ) : (
           <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {products?.items.map((p) => (
-              <ProductCard key={p.id} product={p} />
+            {products?.items.map((p, i) => (
+              <ProductCard key={p.id} product={p} index={i} />
             ))}
           </div>
         )}
@@ -110,8 +110,8 @@ export function HomePage() {
         <section className="mx-auto max-w-7xl px-4 pb-16">
           <h2 className="text-2xl font-bold text-brand-900">Hàng mới về</h2>
           <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {newArrivals.items.map((p) => (
-              <ProductCard key={p.id} product={p} />
+            {newArrivals.items.map((p, i) => (
+              <ProductCard key={p.id} product={p} index={i} />
             ))}
           </div>
         </section>

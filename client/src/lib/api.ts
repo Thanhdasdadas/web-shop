@@ -1,10 +1,11 @@
 import axios, { type InternalAxiosRequestConfig } from 'axios';
+import { getAuthItem, setAuthItem, clearAuthItems } from './authStorage';
 import { getSessionId } from './session';
 
 const api = axios.create({ baseURL: '/api' });
 
 api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-  const token = localStorage.getItem('accessToken');
+  const token = getAuthItem('accessToken');
   if (token) config.headers.Authorization = `Bearer ${token}`;
   config.headers['X-Session-Id'] = getSessionId();
   return config;
@@ -18,21 +19,19 @@ api.interceptors.response.use(
     const original = error.config;
     if (error.response?.status === 401 && !original._retry) {
       original._retry = true;
-      const refreshToken = localStorage.getItem('refreshToken');
+      const refreshToken = getAuthItem('refreshToken');
       if (!refreshToken) return Promise.reject(error);
 
       if (!refreshing) {
         refreshing = axios
           .post<{ accessToken: string; refreshToken: string }>('/api/auth/refresh', { refreshToken })
           .then((r) => {
-            localStorage.setItem('accessToken', r.data.accessToken);
-            localStorage.setItem('refreshToken', r.data.refreshToken);
+            setAuthItem('accessToken', r.data.accessToken);
+            setAuthItem('refreshToken', r.data.refreshToken);
             return r.data.accessToken;
           })
           .catch(() => {
-            localStorage.removeItem('accessToken');
-            localStorage.removeItem('refreshToken');
-            localStorage.removeItem('user');
+            clearAuthItems(['accessToken', 'refreshToken']);
             return null;
           })
           .finally(() => {

@@ -144,8 +144,8 @@ export function ProductsPage() {
         <>
           <p className="mt-6 text-sm text-slate-500">{data?.totalCount} sản phẩm</p>
           <div className="mt-4 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {data?.items.map((p) => (
-              <ProductCard key={p.id} product={p} />
+            {data?.items.map((p, i) => (
+              <ProductCard key={p.id} product={p} index={i} />
             ))}
           </div>
           {data && data.totalPages > 1 && (

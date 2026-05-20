@@ -28,6 +28,11 @@ public class UpdateProfileRequestValidator : AbstractValidator<UpdateProfileRequ
         RuleFor(x => x.FullName).NotEmpty().MaximumLength(100);
 }
 
+public class GoogleLoginRequestValidator : AbstractValidator<GoogleLoginRequest>
+{
+    public GoogleLoginRequestValidator() => RuleFor(x => x.IdToken).NotEmpty();
+}
+
 public class ChangePasswordRequestValidator : AbstractValidator<ChangePasswordRequest>
 {
     public ChangePasswordRequestValidator()

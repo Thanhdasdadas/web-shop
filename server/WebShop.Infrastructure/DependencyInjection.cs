@@ -31,6 +31,12 @@ public static class DependencyInjection
     {
         services.Configure<MongoDbSettings>(configuration.GetSection(MongoDbSettings.SectionName));
         services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
+        services.Configure<GoogleSettings>(o =>
+        {
+            configuration.GetSection(GoogleSettings.SectionName).Bind(o);
+            if (string.IsNullOrWhiteSpace(o.ClientId))
+                o.ClientId = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID") ?? "";
+        });
         services.Configure<SeedSettings>(configuration.GetSection(SeedSettings.SectionName));
 
         services.AddSingleton<MongoDbContext>();
@@ -46,6 +52,7 @@ public static class DependencyInjection
 
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<IJwtTokenService, JwtTokenService>();
+        services.AddScoped<IGoogleTokenValidator, GoogleTokenValidator>();
         services.AddScoped<DataSeeder>();
 
         var jwt = configuration.GetSection(JwtSettings.SectionName).Get<JwtSettings>() ?? new JwtSettings();
