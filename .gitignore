@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+client/dist/
+
+# .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+
+# Env & secrets
+.env
+*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+*.swp
+
+# Logs
+*.log
+
+# Uploaded product images
+server/WebShop.Api/wwwroot/uploads/products/*
+!server/WebShop.Api/wwwroot/uploads/products/.gitkeep

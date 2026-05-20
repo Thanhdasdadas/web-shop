@@ -1,0 +1,34 @@
+services:
+  mongodb:
+    image: mongo:7
+    container_name: webshop-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: webshop
+
+  api:
+    build:
+      context: .
+      dockerfile: server/WebShop.Api/Dockerfile
+    container_name: webshop-api
+    restart: unless-stopped
+    ports:
+      - "5000:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      MongoDb__ConnectionString: mongodb://mongodb:27017
+      MongoDb__DatabaseName: webshop
+      Jwt__Secret: WebShop-Super-Secret-Key-Change-In-Production-32chars!
+      Jwt__Issuer: WebShop
+      Jwt__Audience: WebShop
+      Cors__Origins__0: http://localhost:5173
+    depends_on:
+      - mongodb
+
+volumes:
+  mongo_data:
